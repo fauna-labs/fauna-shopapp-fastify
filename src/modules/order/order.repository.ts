@@ -18,6 +18,11 @@ export interface UpdateOrderInput extends WithSecret {
   payload: Pick<Order, 'status'>
 }
 
+interface ListCustomerOrdersInput {
+  secret?: string
+  customerRef?: string
+}
+
 const mergeOrderWithRef = mergeWithRef({ refFields: ['customerRef'] })
 
 export const createOrder = async ({
@@ -35,7 +40,7 @@ export const createOrder = async ({
     }),
   )
 
-  const RemapProductRefToProductDoc = Q.Lambda(
+  const remapProductRefToProductDoc = Q.Lambda(
     'productRefAndQuantity',
     {
       product: Q.Get(
@@ -49,7 +54,7 @@ export const createOrder = async ({
     },
   )
 
-  const DecrementQuantityForProduct = Q.Lambda(
+  const decrementQuantityForProduct = Q.Lambda(
     'productAndQuantity',
     Q.Let(
       {
@@ -80,7 +85,7 @@ export const createOrder = async ({
     ),
   )
 
-  const RemapProductAndQuantityToOrderedItem = Q.Lambda(
+  const remapProductAndQuantityToOrderedItem = Q.Lambda(
     'productAndQuantity',
     {
       productRef: Q.Select(
@@ -95,17 +100,17 @@ export const createOrder = async ({
     },
   )
 
-  const CreateOrderFlow = Q.Let(
+  const createOrderFlow = Q.Let(
     {
       productAndQuantities: Q.Map(
         productRefAndQuantities,
-        RemapProductRefToProductDoc,
+        remapProductRefToProductDoc,
       ),
     },
     Q.Do(
       Q.Map(
         Q.Var('productAndQuantities'),
-        DecrementQuantityForProduct,
+        decrementQuantityForProduct,
       ),
       Q.Create(Q.Collection(Db.ORDERS), {
         data: {
@@ -113,7 +118,7 @@ export const createOrder = async ({
           status: OrderStatus.ORDERED,
           items: Q.Map(
             Q.Var('productAndQuantities'),
-            RemapProductAndQuantityToOrderedItem,
+            remapProductAndQuantityToOrderedItem,
           ),
           orderedAt: Q.Now(),
         },
@@ -122,7 +127,7 @@ export const createOrder = async ({
   )
 
   return Db.client
-    .query<V.Document<Order>>(CreateOrderFlow)
+    .query<V.Document<Order>>(createOrderFlow)
     .then(mergeOrderWithRef)
     .catch(err =>
       Promise.reject(
@@ -143,7 +148,7 @@ export const updateOrder = ({
   orderRef,
   payload: { status },
 }: UpdateOrderInput) => {
-  const UpdateOrderQuery = Q.Update(
+  const updateOrderQuery = Q.Update(
     Q.Ref(Q.Collection(Db.ORDERS), orderRef),
     {
       data: { status },
@@ -151,25 +156,27 @@ export const updateOrder = ({
   )
 
   return Db.client
-    .query<V.Document<Order>>(UpdateOrderQuery, {
+    .query<V.Document<Order>>(updateOrderQuery, {
       secret,
     })
     .then(mergeOrderWithRef)
 }
 
-export const listCustomerOrders = ({ secret }: WithSecret) => {
-  const ListCustomerOrders = Q.Map(
-    Q.Paginate(
-      Q.Match(
-        Q.Index(Db.ORDERS_SEARCH_BY_CUSTOMER),
-        Q.CurrentIdentity(),
-      ),
-    ),
+export const listCustomerOrders = ({
+  secret,
+  customerRef,
+}: ListCustomerOrdersInput) => {
+  const ref =
+    customerRef === 'current'
+      ? Q.CurrentIdentity()
+      : Q.Ref(Q.Collection(Db.CUSTOMERS), customerRef)
+  const listCustomerOrders = Q.Map(
+    Q.Paginate(Q.Match(Q.Index(Db.ORDERS_SEARCH_BY_CUSTOMER), ref)),
     Q.Lambda(['_', 'ref'], Q.Get(Q.Var('ref'))),
   )
 
   return Db.client
-    .query<V.Page<V.Document<Order>>>(ListCustomerOrders, {
+    .query<V.Page<V.Document<Order>>>(listCustomerOrders, {
       secret,
     })
     .then(({ data }) => ({
@@ -181,7 +188,7 @@ export const listOrderChanges = ({
   secret,
   orderRef,
 }: WithSecret & Record<'orderRef', string>) => {
-  const ListOrderChanges = Q.Filter(
+  const listOrderChanges = Q.Filter(
     Q.Select(
       ['data'],
       Q.Paginate(Q.Events(Q.Ref(Q.Collection(Db.ORDERS), orderRef))),
@@ -196,7 +203,7 @@ export const listOrderChanges = ({
     }))
 
   return Db.client
-    .query<OrderChange[]>(ListOrderChanges, {
+    .query<OrderChange[]>(listOrderChanges, {
       secret,
     })
     .then(formatChanges)

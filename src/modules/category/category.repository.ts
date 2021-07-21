@@ -11,7 +11,7 @@ export const createCategory = ({
   secret,
   payload,
 }: CreateCategoryInput) => {
-  const CreateCategory = Q.Create(Q.Collection(Db.CATEGORIES), {
+  const createCategory = Q.Create(Q.Collection(Db.CATEGORIES), {
     data: {
       ...payload,
       createdAt: Q.Now(),
@@ -19,20 +19,20 @@ export const createCategory = ({
   })
 
   return Db.client
-    .query<V.Document<Category>>(CreateCategory, {
+    .query<V.Document<Category>>(createCategory, {
       secret,
     })
     .then(mergeWithRef())
 }
 
 export const listCategories = () => {
-  const ListCategories = Q.Map(
+  const listCategories = Q.Map(
     Q.Paginate(Q.Documents(Q.Collection(Db.CATEGORIES))),
     Q.Lambda('ref', Q.Get(Q.Var('ref'))),
   )
 
   return Db.client
-    .query<V.Page<V.Document<Category>>>(ListCategories)
+    .query<V.Page<V.Document<Category>>>(listCategories)
     .then(({ data }) => ({
       data: data.map(mergeWithRef()),
     }))

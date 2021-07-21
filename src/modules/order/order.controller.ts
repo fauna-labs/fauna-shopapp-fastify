@@ -87,12 +87,20 @@ const updateOrder: RouteOptions = {
 
 const listCustomerOrders: RouteOptions = {
   method: 'GET',
-  url: '/customers/current/orders',
+  url: '/customers/:customerRef/orders',
   schema: {
     headers: authorizationSchema,
     security: schemaSecurity,
+    params: {
+      customerRef: {
+        type: 'string',
+        minLength: 1,
+        default: 'current',
+      },
+    },
   },
-  handler: ({ headers }) => {
+  handler: ({ headers, params }) => {
+    const { customerRef } = params as Record<'customerRef', string>
     const { authorization } = headers as WithAuthorization
 
     if (!authorization) {
@@ -100,6 +108,7 @@ const listCustomerOrders: RouteOptions = {
     }
 
     return orderRepo.listCustomerOrders({
+      customerRef,
       secret: authorization,
     })
   },

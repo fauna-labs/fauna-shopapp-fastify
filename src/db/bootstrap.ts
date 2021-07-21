@@ -225,7 +225,14 @@ const roles: [Expr, Expr][] = [
         {
           resource: Q.Collection(Db.ORDERS),
           actions: {
+            read: true,
             write: true,
+          },
+        },
+        {
+          resource: Q.Index(Db.ORDERS_SEARCH_BY_CUSTOMER),
+          actions: {
+            read: true,
           },
         },
       ],

@@ -18,7 +18,7 @@ export const createProduct = ({
   secret,
   payload: { inCategoryRefs, ...payload },
 }: CreateProductInput) => {
-  const CreateProduct = Q.Create(Q.Collection(Db.PRODUCTS), {
+  const createProduct = Q.Create(Q.Collection(Db.PRODUCTS), {
     data: {
       ...payload,
       createdAt: Q.Now(),
@@ -29,10 +29,14 @@ export const createProduct = ({
   })
 
   return Db.client
-    .query<V.Document<Product>>(CreateProduct, {
+    .query<V.Document<Product>>(createProduct, {
       secret,
     })
-    .then(mergeWithRef({ refFields: ['inCategoryRefs'] }))
+    .then(
+      mergeWithRef({
+        refFields: ['inCategoryRefs'],
+      }),
+    )
 }
 
 export const listProducts = ({
@@ -45,19 +49,19 @@ export const listProducts = ({
     [SortOpt.PRICE_ASC]: Db.PRODUCTS_SORT_BY_PRICE_ASC,
     [SortOpt.PRICE_DESC]: Db.PRODUCTS_SORT_BY_PRICE_DESC,
   }[sortBy]
-  const ProductsMatch = categoryRef
+  const productsMatch = categoryRef
     ? Q.Match(
         Q.Index(Db.PRODUCTS_SEARCH_BY_CATEGORY),
         Q.Ref(Q.Collection(Db.CATEGORIES), categoryRef),
       )
     : Q.Documents(Q.Collection(Db.PRODUCTS))
-  const Query = Q.Map(
-    Q.Paginate(Q.Join(ProductsMatch, Q.Index(sortIndex)), { size }),
+  const query = Q.Map(
+    Q.Paginate(Q.Join(productsMatch, Q.Index(sortIndex)), { size }),
     Q.Lambda(['_', '__', 'ref'], Q.Get(Q.Var('ref'))),
   )
 
   return Db.client
-    .query<V.Page<V.Document<Product>>>(Query)
+    .query<V.Page<V.Document<Product>>>(query)
     .then(({ data }) => ({
       data: data.map(mergeWithRef({ refFields: ['inCategoryRefs'] })),
     }))

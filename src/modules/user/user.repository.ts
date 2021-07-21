@@ -52,7 +52,7 @@ export const registerUser = ({
   type,
   ...payload
 }: RegistrationPayload) => {
-  const RegisterQuery = Q.Do(
+  const registerQuery = Q.Do(
     Q.Create(resolveCollectionByType(type), {
       data: {
         ...payload,
@@ -68,7 +68,7 @@ export const registerUser = ({
   )
 
   return Db.client
-    .query<LoginOutput>(RegisterQuery)
+    .query<LoginOutput>(registerQuery)
     .then(mapLoginOutput)
 }
 
