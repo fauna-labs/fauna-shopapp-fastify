@@ -352,7 +352,7 @@ const seedData = async ({ client }: Record<'client', Client>) => {
     type: UserType.CUSTOMER,
   })
 
-  console.info(`Created a sample customer user, use the following credentials to sign in:
+  console.info(`Use these sample customer credentials to log into the frontend app:
   - phone: ${creds.phone}
   - password: ${creds.password}`)
 }
