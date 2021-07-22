@@ -1,7 +1,20 @@
-# Sample shop app using Fauna
+# Fauna Labs
+
+This repository contains unofficial patterns, sample code, or tools to help developers build more effectively with [Fauna][fauna]. All [Fauna Labs][fauna-labs] repositories are provided “as-is” and without support. By using this repository or its contents, you agree that this repository may never be officially supported and moved to the [Fauna organization][fauna-organization].
+
+[fauna]: https://www.fauna.com/
+[fauna-labs]: https://github.com/fauna-labs
+[fauna-organization]: https://github.com/fauna
+
+# Backend of a sample shop app using Fauna, Typescript, Fastify, React, and Tailwind 
 
 ## Overview
-This is the backend/API service for a sample e-commerce application built with the Fastify framework, using [Fauna](http://fauna.com/) for data storage. The `/src/modules` directory represents domain entities, with each module having its own `.repository.ts` file where the FQL (Fauna's eDSL) queries live. The `src/db` folder contains scripts and constants used during the `npm run bootstrap` command to set up the app's schema and seed some sample data.
+
+This is the backend/API service part of a sample e-commerce application built with the Fastify framework, using [Fauna](http://fauna.com/) for data storage. The `/src/modules` directory represents domain entities, with each module having its own `.repository.ts` file where the FQL (Fauna's eDSL) queries live. The `src/db` folder contains scripts and constants used during the `npm run bootstrap` command to set up the app's schema and seed some sample data.
+
+The frontend is hosted in a separate [fauna-shopapp-react](https://github.com/fauna-labs/fauna-shopapp-react) repo, built with React and Tailwind.
+
+These instructions walk you through setting up both the backend and frontend.
 
 ## Instructions
 
@@ -24,7 +37,7 @@ Use these sample customer credentials to log into the frontend React app:
   - password: <unique value>
 ```
 
-### 2. Try out the backend API service via the Swagger docs
+### 2. Optionally, try out the backend API service via the Swagger docs
 
 * Run `npm start` to start the backend service.
 * Open the Swagger documentation at [http://localhost:4000/docs](http://localhost:4000/docs).
@@ -35,7 +48,7 @@ Use these sample customer credentials to log into the frontend React app:
   * If you receive a 401 upon executing a request, that means the manager role does not have permission to execute that request.
 
 ### 3. Set up the frontend app
-* Clone the client repo: `git clone https://github.com/tigger9flow/faunadb-react-shop-app.git`
+* Clone the client repo: `git clone https://github.com/fauna-labs/fauna-shopapp-react.git`
 * `cd faunadb-react-shop-app`
 * Install dependencies: `npm i`
 * Serve a client app locally: `npm start`
