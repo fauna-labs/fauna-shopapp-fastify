@@ -6,7 +6,7 @@ This is the backend/API service for a sample e-commerce application built with t
 ## Instructions
 
 ### 1. Set up the backend service
-* Clone the repo: `git clone https://github.com/tigger9flow/faunadb-nodejs-shop-app.git`
+* Clone the repo: `git clone https://github.com/fauna-labs/fauna-shopapp-fastify.git`
 * Open the project folder: `cd faunadb-nodejs-shop-app`
 * Install dependencies: `npm i`
 * Rename `.env.sample` to `.env`: `mv .env.sample .env`
